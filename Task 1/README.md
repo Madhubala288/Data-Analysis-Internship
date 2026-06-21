@@ -1,3 +1,12 @@
+---
+title: Customer Churn Dashboard
+emoji: 📊
+colorFrom: blue
+colorTo: green
+sdk: streamlit
+app_file: Task 1/app.py
+pinned: false
+---
 # Customer Behavior Analytics & Churn Prediction Dashboard
 
 ## Project Overview
