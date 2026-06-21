@@ -4,7 +4,8 @@ emoji: 📊
 colorFrom: blue
 colorTo: green
 sdk: streamlit
-app_file: Task 1/app.py
+app_file: app.py
+path_in_repo: Task 1
 pinned: false
 ---
 # Customer Behavior Analytics & Churn Prediction Dashboard
