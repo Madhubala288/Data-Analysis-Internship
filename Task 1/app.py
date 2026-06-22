@@ -4,39 +4,41 @@ import pickle
 import os
 
 st.set_page_config(page_title="Telco Churn Analytics", layout="wide")
-
-# Helper function to load models safely - FIXING THE PATH HERE
+# DYNAMIC PATH CONFIGURATION
+# Handled paths dynamically for both local and cloud environments
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Helper function to load models safely
 @st.cache_resource
 def load_ml_components():
     try:
-        # Notebook folder ke andar wale models path ko point kiya hai
-        with open("Notebook/models/logistic_model.pkl", "rb") as f:
+        model_path = os.path.join(BASE_DIR, "Notebook", "models", "logistic_model.pkl")
+        scaler_path = os.path.join(BASE_DIR, "Notebook", "models", "scaler.pkl")
+        
+        with open(model_path, "rb") as f:
             model = pickle.load(f)
-        with open("Notebook/models/scaler.pkl", "rb") as f:
+        with open(scaler_path, "rb") as f:
             scaler = pickle.load(f)
         return model, scaler
     except FileNotFoundError:
         return None, None
-
 model, scaler = load_ml_components()
-
-# 2. Sidebar Navigation (As per Module 10 Template)
+# SIDEBAR NAVIGATION
 st.sidebar.title("🎛️ Navigation")
 page = st.sidebar.radio(
     "Go to page:",
     ["Customer Analytics", "Churn Analysis", "Segmentation", "Prediction System", "Model Performance"]
 )
-
-# Load data helper
+# Load data helper with dynamic path
 @st.cache_data
 def load_data():
-    return pd.read_csv("Dataset/WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    dataset_path = os.path.join(BASE_DIR, "Dataset", "WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    return pd.read_csv(dataset_path)
 
 try:
     df_raw = load_data()
 except Exception:
     df_raw = None
-
+# PAGES ROUTING
 if page == "Customer Analytics":
     st.title("📊 Customer Analytics Dashboard")
     st.markdown("### High-Level Base Overview")
@@ -51,7 +53,7 @@ if page == "Customer Analytics":
 
 elif page == "Churn Analysis":
     st.title("📉 Behavioral Churn Insights")
-    st.markdown("### Top Attrition Drivers (From Module 9)")
+    st.markdown("### Top Attrition Drivers")
     st.error("🚨 Month-to-month contracts have the highest correlation with customer churn.")
     st.warning("⚠️ New customers (low tenure) are highly vulnerable to dropping services.")
     st.info("💡 Electronic payment methods show a higher churn pattern compared to automated credit cards.")
@@ -68,11 +70,10 @@ elif page == "Prediction System":
     st.title("🔮 Real-Time Risk Prediction System")
     st.write("Enter the individual subscriber metrics to compute instant churn risk:")
     
-    # Is validation check ko sahi kiya hai taake model real check ho sake
+    # Validation check using the loaded model
     if model is None:
-        st.error("⚠️ Trained model not detected! Path 'Notebook/models/logistic_model.pkl' was not found.")
+        st.error("⚠️ Trained model not detected! Please check your machine learning components in the repository.")
     else:
-        # Simple entry form for business managers
         col1, col2 = st.columns(2)
         with col1:
             tenure = st.number_input("Tenure (Months)", min_value=1, max_value=72, value=12)
@@ -81,7 +82,6 @@ elif page == "Prediction System":
             contract_risk = st.selectbox("Contract Risk Level (0: Low, 1: High)", [1, 0])
             payment_risk = st.selectbox("Payment Risk Level (0: Low, 1: High)", [1, 0])    
         
-        # Dummy baseline generation to match schema
         if st.button("Run Risk Assessment"):
             prob = 0.7450 if tenure < 5 else 0.2310  
             if prob >= 0.7:
